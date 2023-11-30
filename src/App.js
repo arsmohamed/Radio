@@ -1,25 +1,55 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from 'react';
+import axios from 'axios';
 
-function App() {
+function RadioPlayer() {
+  const [stations, setStations] = useState([]);
+  const [selectedStation, setSelectedStation] = useState(null);
+
+  const getStations = async () => {
+    try {
+      const response = await axios.get('https://50k-radio-stations.p.rapidapi.com/get/channels', {
+        params: {
+          keyword: 'a',
+          country_id: '50',
+          page: '1'
+        },
+        headers: {
+          'X-RapidAPI-Key': 'd21e22b6aemsh31775c1a1d8ff0cp111a5bjsned4612084d2a',
+          'X-RapidAPI-Host': '50k-radio-stations.p.rapidapi.com'
+        }
+      });
+      console.log(response.data);
+      setStations(response.data.content);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const playStation = (station) => {
+    setSelectedStation(station);
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      <button onClick={getStations}>Get Stations</button>
+      {Array.isArray(stations) && stations.map((station) => (
+        <div key={station.id}>
+          <input
+            type="radio"
+            id={station.id}
+            name="station"
+            value={station.id}
+            onChange={() => playStation(station)}
+          />
+          <label htmlFor={station.id}>{station.name}</label>
+        </div>
+      ))}
+      {selectedStation && (
+        <audio src={selectedStation.stream} controls autoPlay />
+      )}
     </div>
   );
 }
 
-export default App;
+
+export default RadioPlayer;
